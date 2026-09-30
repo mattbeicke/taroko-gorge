@@ -4,16 +4,15 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <style type="text/css">
       body {
-        background: #062;
-        color: #dad;
+        background: #1e1e1e;
         margin: 0 24pt 0 24pt;
-        font-family: Optima, sans-serif;
+        font-family: "Source Code Pro", monospace;
         font-size: 13pt;
       }
 
       div {
         height: 16pt;
-        color: aliceblue;
+        color: white;
       }
 
       a {
@@ -25,60 +24,137 @@
       var t = 0;
       var n = 0;
       var paths = 0;
-      var above = "brow,mist,shape,layer,the crag,stone,forest,height".split(
-        ",",
-      );
-      var below = "flow,basin,shape,vein,rippling,stone,cove,rock".split(",");
-      var trans = "command,pace,roam,trail,frame,sweep,exercise,range".split(
-        ",",
-      );
-      var imper =
-        "track,shade,translate,stamp,progress through,direct,run,enter";
-      imper = imper.split(",");
-      var intrans = "linger,dwell,rest,relax,hold,dream,hum".split(",");
-      var s = "s,".split(",");
-      var texture = "rough,fine".split(",");
+
+      var above =
+        "int,float,double,char,byte,bool,boolean,str,string,String,object,Object,list,dict,set,tuple,Task,Record".split(
+          ",",
+        );
+      var below =
+        "data,cache,stack,state,result,payload,value,config,session,response,request,index,pointer,node,element,signal,queue,myVar,fun1,yeah,variableNow".split(
+          ",",
+        );
+      var trans =
+        "execute,resolve,parse,compile,render,process,convert,bind,fetch,serialize,deserialize,dispatch,transform".split(
+          ",",
+        );
+      var imper = "class,struct,interface,namespace,enum,def,record".split(",");
+      var intrans =
+        "null,None,void,true,True,false,False,this,self,break,continue".split(
+          ",",
+        );
+      var texture =
+        "public,private,protected,static,async,readonly,final,const,volatile".split(
+          ",",
+        );
+      var ops = "==,!=,>,<,>=,<=,instanceof,is".split(",");
+
       function rand_range(max) {
         return Math.floor(Math.random() * (max + 1));
       }
+
       function choose(array) {
         return array[rand_range(array.length - 1)];
       }
+
       function path() {
-        var p = rand_range(1);
-        var words = choose(above);
-        if (words == "forest" && rand_range(3) == 1) {
-          words = "monkeys " + choose(trans);
-        } else {
-          words += s[p] + " " + choose(trans) + s[(p + 1) % 2];
-        }
-        words += " the " + choose(below) + choose(s) + ".";
-        return words;
-      }
-      function site() {
+        var p = rand_range(3);
+        var type = choose(above);
         var words = "";
-        if (rand_range(2) == 1) {
-          words += choose(above);
+
+        if (p == 0) {
+          words =
+            "var " +
+            choose(below) +
+            " = " +
+            choose(trans) +
+            "(" +
+            choose(below) +
+            ");";
+        } else if (p == 1) {
+          words =
+            "const " +
+            type +
+            " " +
+            choose(below) +
+            " = " +
+            choose(trans) +
+            "(" +
+            choose(below) +
+            ");";
+        } else if (p == 2) {
+          words = "return await " + choose(trans) + "(" + choose(below) + ");";
         } else {
-          words += choose(below);
+          words =
+            "final " + type + " " + choose(below) + " = new " + type + "();";
         }
-        words += "s " + choose(intrans) + ".";
+
         return words;
       }
+
+      function site() {
+        var op = choose(ops);
+        var mode = rand_range(3);
+        var words = "";
+
+        if (mode == 0) {
+          words =
+            "if (" +
+            choose(below) +
+            " " +
+            op +
+            " " +
+            choose(intrans) +
+            ") return " +
+            choose(intrans) +
+            ";";
+        } else if (mode == 1) {
+          words =
+            choose(below) + "." + choose(trans) + "(" + choose(intrans) + ");";
+        } else if (mode == 2) {
+          words =
+            "while (" +
+            choose(below) +
+            " " +
+            op +
+            " " +
+            choose(below) +
+            ") " +
+            choose(trans) +
+            "();";
+        } else {
+          words =
+            choose(below) +
+            " = " +
+            choose(below) +
+            " ?? " +
+            choose(intrans) +
+            ";";
+        }
+
+        return words;
+      }
+
       function cave() {
         var adjs = (
-          "encompassing," +
+          "async," +
           choose(texture) +
-          ",sinuous,straight,objective,arched,cool,clear,dim,driven"
+          ",static,public,private,readonly,protected,volatile"
         ).split(",");
-        var target = 1 + rand_range(3);
+        var target = 1 + rand_range(2);
         while (adjs.length > target) {
           adjs.splice(rand_range(adjs.length), 1);
         }
         var words =
-          "\u00a0\u00a0" + choose(imper) + " the " + adjs.join(" ") + " \u2014";
+          "\u00a0\u00a0" +
+          adjs.join(" ") +
+          " " +
+          choose(imper) +
+          " " +
+          choose(above) +
+          " {";
         return words;
       }
+
       function do_line() {
         var main = document.getElementById("main");
         if (t <= 25) {
@@ -104,21 +180,20 @@
           n = 0;
         }
         n += 1;
-        text =
-          text.substring(0, 1).toUpperCase() + text.substring(1, text.length);
         last = document.createElement("div");
         last.appendChild(document.createTextNode(text));
         main.appendChild(last);
       }
+
       function poem() {
-        setInterval(do_line, 1200);
+        setInterval(do_line, 700);
       }
     </script>
-    <title>My Taroko Gorge</title>
+    <title>Token Generator</title>
   </head>
   <body onload="poem()">
-    <div style="float: right; margin-top: 12px; color: #0b3; height: 60pt">
-      <div>Taroko Gorge &middot; 2026-09-30</div>
+    <div style="float: right; margin-top: 12px; color: #0b3">
+      <div>Token Generator &middot; 2026-09-30</div>
       <a>Matthew Beicke</a><br /><br />
       <a>and no one else</a><br />
     </div>
